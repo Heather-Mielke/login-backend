@@ -1,14 +1,36 @@
 const express = require("express")
 const user = express.Router()
-const User = require('../models/userdata')
-
+const User = require('../models/User.js')
 
 user.get("/", (req, res) => {
-    User.findOneAndDelete({}, (err, foundUsers) => {
-        res.json(foundUsers)
+    res.send("Welcome!!")
+    console.log(User)
+}
+)
+user.get("/users", (req, res) => {
+    User.find({}, (err, foundUsers) => {
+        res.send(foundUsers)
+        
     })
 })
 
 user.put("/login", (req, res) => {
-    console.log(req.body)
+    let result = User.find(user => user.Username == req.body.Username);
+    if(result) {
+        if(result.Password == req.body.password){
+            res.status(200). send( {
+                message: "Successful Login!!"
+            })
+        }else {
+            res.status(200).send({
+                message: "Password Incorrect!!"
+            })
+        }
+    }else{
+        res.status(200).send({
+            message: "User not Found!!"
+        })
+    }
 })
+
+module.exports = user

@@ -5,55 +5,54 @@ const http = require("http").createServer(app);
 const fastcsv = require("fast-csv")
 const parse = require("csv-parser")
 const mongoose = require("mongoose")
-const multer = require("multer");
 const path = require("path");
-const csvModel = require("./models/userdata")
+const csvModel = require("./models/User")
 const csv = require("csvtojson");
 const { MongoClient } = require("mongodb");
 const mongodb = require("mongodb").MongoClient;
-
-
+const User = require("./models/User")
+const userController = require('./controllers/userController');
+const db = mongoose.connection
 //Defining url for local MongoDB
-let url = "mongodb://localhost:27017/";
+let url = "mongodb://localhost:27017/userLogin";
 let client = new MongoClient(url)
-mongodb.connect(
-    url,
-    {useNewUrlParser: true, useUnifiedTopology: true},
-    (err, client) => {
-        if(err) console.log(err);
-        client.db("userLogin")
-        .collection("Users")
-        .insertMany(csvData, (err, res) => {
-            if (err) console.log(err);
-            console.log(`Inserted: ${res.insertedCount} rows`);
-            client.close()
+// mongodb.connect(
+//     url,
+//     {useNewUrlParser: true, useUnifiedTopology: true},
+//     (err, client) => {
+//         if(err) console.log(err);
+//         client.db("userLogin")
+//         .collection("users")
+//         .insertMany(csvData, (err, res) => {
+//             if (err) console.log(err);
+//             console.log(`Inserted: ${res.insertedCount} rows`);
+//             client.close()
+//         })
+//     }
+// )
+
+
+client, function (err, db) {
+    db.collection("users", function (err, collection) {
+        collection.find({}).toArray(function(err, items){
+            console.log(items)
         })
-    }
-)
+    })
+}
+
+//Gets all the users that were put in the database from the csv
+app.get("/users", (req, res) => {
+    User.find({}, (err, foundUsers) => {
+        res.send(foundUsers)
+        
+    })
+})
+        
 
 
-//Establishing connection
-// let dbConn;
-// mongodb.connect(url, {
-//     useUnifiedTopology: true,
-// }).then((client) =>{
-//     console.log("DB connected!!");
-//     dbConn = client.db();
-// }).catch(err => {
-//     console.log(`DB Connection Error: ${err.message}`)
-// })
-// const userController = require('./controllers/userController');
+app.use('/user', userController)
 
-//grabs data from csv file
-// fileSystem.createReadStream('public/logindata.csv')
-// //parses the data to be grabbed
-// .pipe(parse())
-// .on('data', function(data){
-//     // console.log(data.Id)
-//     // console.log(data.Name)
-//     // console.log(data.Username)
-//     // console.log(data.Password)
-// });
+
 
 //Displaying data from csv
 csv().fromFile("./public/logindata.csv")
@@ -84,5 +83,8 @@ const loginData = "./public/logindata.csv"
 
 
 
-app.listen(3000, () => console.log('Listening on port: 3000'));
+app.listen(3001, () => console.log('Listening on port: 3001'));
 
+mongoose.connect(url, () => {
+    console.log('the connection with mongod is established')
+  })
