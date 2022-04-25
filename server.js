@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const fs = require("fs");
-const http = require("http").createServer(app);
 const fastcsv = require("fast-csv")
 const parse = require("csv-parser")
 const mongoose = require("mongoose")
@@ -13,9 +12,14 @@ const mongodb = require("mongodb").MongoClient;
 const User = require("./models/User")
 const userController = require('./controllers/userController');
 const db = mongoose.connection
+const bodyParser = require("body-parser")
+const cors = require('cors')
+
 //Defining url for local MongoDB
 let url = "mongodb://localhost:27017/userLogin";
 let client = new MongoClient(url)
+
+//connects to mongodb client and inserts csv data
 // mongodb.connect(
 //     url,
 //     {useNewUrlParser: true, useUnifiedTopology: true},
@@ -32,6 +36,18 @@ let client = new MongoClient(url)
 // )
 
 
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+//cors helps with security
+app.use(cors())
+app.use('/user', userController)
+
+
+
+//finds the collection users in the database and puts them into array
 client, function (err, db) {
     db.collection("users", function (err, collection) {
         collection.find({}).toArray(function(err, items){
@@ -40,19 +56,6 @@ client, function (err, db) {
     })
 }
 
-//Gets all the users that were put in the database from the csv
-app.get("/users", (req, res) => {
-    User.find({}, (err, foundUsers) => {
-        res.send(foundUsers)
-        
-    })
-})
-        
-
-
-app.use('/user', userController)
-
-
 
 //Displaying data from csv
 csv().fromFile("./public/logindata.csv")
@@ -60,6 +63,7 @@ csv().fromFile("./public/logindata.csv")
     console.log(csvData)
 })
 
+//Turns csv data into json data by making it an object and pushing it into an array
 // let stream = fs.createReadStream("./public/logindata.csv")
 // let csvData = [];
 // let csvStream = fastcsv
