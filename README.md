@@ -1,5 +1,9 @@
 # Login-backend
 
+## To Run
+- nodemon
+- setup mongod path. Should look something like (mongod --dbpath ~/dev/data/db/)
+- uncomment code in server.js and run (then can recomment)- (code only used to add csv data to database)
 ## Node.js and MongoDB 
 User login with react frontend and node.js/mongodb backend.
 
